@@ -48,7 +48,7 @@ not need to modify anything in the Makefile except these compiler flags.
 
 The next steps of this tutorial should be executed in Kabré's GPU nodes to make
 use of the four Tesla k40c GPUs. To run code in the GPU nodes you have to create
-a pbs file and send it to the queue k40. So create a "main.pbs" file that contains
+a pbs file and send it to queue k40. So create a "main.pbs" file that contains
 the following header:
 
     #PBS -N NameOfTheJob
@@ -61,8 +61,8 @@ NumberOfNodesAndCores with nodes=1:ppn=1, and RequestedTime with walltime=00:13:
 This means that a job named OPENACC_LAB2 is going to be send to the queue k40 and
 will execute using 1 node and 1 processor for a maximum of 13 minutes.
 
-After the header you can put the script you want to execute. In this case it is
-necessary to go to the working directory and load the pgi and cuda modules:
+After the header you can put the script you want to execute. In this case, it is
+necessary to first go to the working directory and load the pgi and cuda modules:
 
     cd $PBS_O_WORKDIR
     module load pgi
@@ -78,7 +78,7 @@ To check the status of your job use:
 
     qstat -a -u USERNAME
 
-When the job is finished you can check your results at file: 
+When the job is finished you can check your results in file: 
     
     NameOfTheJob.oJobNumber    
 
@@ -97,7 +97,7 @@ Step 1 - Identify Parallelism
 In this step, use the NVPROF profiler, or your preferred performance analysis
 tool, to identify the important routines in the application and examine the
 loops within these routines to determine whether they are candidates for
-acceleration. Then write the command below in the pbs file to gather a CPU profile.
+acceleration. Then, write the command below in the pbs file to gather a CPU profile.
 
     $ nvprof --cpu-profiling on --cpu-profiling-mode top-down ./cg
     Rows: 8120601, nnz: 218535025
@@ -195,7 +195,8 @@ to read the compiler feedback to understand how the compiler parallelizes the
 code for you. If you are doing the C/C++ lab, it may be necessary to declare
 some pointers as `restrict` in order for the compiler to parallelize them. You
 will know if this is necessary if the compiler feedback lists a "complex loop
-carried dependency."
+carried dependency." Repeat step 1 and 2 for the other routines but this time
+execute the profiling for the gpu: ADDLINES FOR GPU PROFILING!!!
 
 Conclusion
 ----------
