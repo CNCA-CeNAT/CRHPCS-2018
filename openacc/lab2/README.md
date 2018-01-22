@@ -46,12 +46,58 @@ command. You may change the options passed to the compiler by modifying the
 `CFLAGS` variable in `c99/Makefile` or `FCFLAGS` in `f90/Makefile`. You should
 not need to modify anything in the Makefile except these compiler flags.
 
+The next steps of this tutorial should be executed in Kabré's GPU nodes to make
+use of the four Tesla k40c GPUs. To run code in the GPU nodes you have to create
+a pbs file and send it to the queue k40. So create a "main.pbs" file that contains
+the following header:
+
+    #PBS -N NameOfTheJob
+    #PBS -q NameOfTheQueue
+    #PBS -l NumberOfNodesAndCores
+    #PBS -l RequestedTime
+
+Then replace NameOfTheJob with OPENACC_LAB2, NameOfTheQueue with k40,
+NumberOfNodesAndCores with nodes=1:ppn=1, and RequestedTime with walltime=00:13:00.
+This means that a job named OPENACC_LAB2 is going to be send to the queue k40 and
+will execute using 1 node and 1 processor for a maximum of 13 minutes.
+
+After the header you can put the script you want to execute. In this case it is
+necessary to go to the working directory and load the pgi and cuda modules:
+
+    cd $PBS_O_WORKDIR
+    module load pgi
+    module load cuda/9.0.176
+
+After this instructions you can place the commands you want to execute. Then
+save it and send the job (pbs file) to the queue system using the following
+command:
+
+    qsub main.pbs
+    
+To check the status of your job use:
+
+    qstat -a -u USERNAME
+
+When the job is finished you can check your results at file: 
+    
+    NameOfTheJob.oJobNumber    
+
+**Hint** If you are doing code profiling, you may want to check out also the file
+
+    NameOfTheJob.eJobNumber
+    
+which sometimes stores the profiler's output.
+
+**Hint** You should repeat steps 2 and 3 for each function identified in step 1
+in order of function importance. Gather a new GPU profile each time and observe
+how the profile changes after each step.
+ 
 Step 1 - Identify Parallelism
 -----------------------------
 In this step, use the NVPROF profiler, or your preferred performance analysis
-tool, to idetify the important routines in the application and examine the
+tool, to identify the important routines in the application and examine the
 loops within these routines to determine whether they are candidates for
-acceleration. Run the command below to gather a CPU profile.
+acceleration. Then write the command below in the pbs file to gather a CPU profile.
 
     $ nvprof --cpu-profiling on --cpu-profiling-mode top-down ./cg
     Rows: 8120601, nnz: 218535025
@@ -150,28 +196,6 @@ code for you. If you are doing the C/C++ lab, it may be necessary to declare
 some pointers as `restrict` in order for the compiler to parallelize them. You
 will know if this is necessary if the compiler feedback lists a "complex loop
 carried dependency."
-
-
-Step 3 - Re-Profile Application
--------------------------------
-Once you have added the OpenACC directives to your code, you should obtain a
-new profile of the application. For this step, use the NVIDIA Visual Profiler
-to obtain a GPU timeline and see how the the GPU computation and data movement
-from CUDA Unified Memory interact. 
-
-- If you are doing this lab on your own machine, either launch Visual Profiler
-  from its application link or via the `nvvp` command.
-
-Once Visual Profiler has started, create a new session by selecting *File -> New
-Session*. Then select the executable that you built by pressing the *Browse*
-button next to *File*, browse to your working directory, select the `cg`
-executable, and then press *Next*. On the next screen ensure that
-*Enable unified memory profiling* is checked and press *Finish*. The result
-should look like the image below. Experiment with Visual Profiler to see what
-information you can learn from it.
-
-![Image of NVIDIA Visual Profiler after completing lab 2 with the kernels
-directive](./visual_profiler_lab2.png)
 
 Conclusion
 ----------
