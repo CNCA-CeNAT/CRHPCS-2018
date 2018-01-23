@@ -195,11 +195,14 @@ to read the compiler feedback to understand how the compiler parallelizes the
 code for you. If you are doing the C/C++ lab, it may be necessary to declare
 some pointers as `restrict` in order for the compiler to parallelize them. You
 will know if this is necessary if the compiler feedback lists a "complex loop
-carried dependency." Repeat step 1 and 2 for the other two most consuming time
-routines, but this time you may add an extra parameter for profiling the gpu also:
+carried dependency." Repeat step 1 and 2 for the other two most time-consuming
+routines, but this time you may add an extra parameter to also profile the gpu:
 
     nvprof --cpu-profiling on --cpu-profiling-mode top-down --print-gpu-summary ./cg
     
+
+**Hint** You may need to take a look at the OpenACC API if you use "parallel" directive: 
+https://www.openacc.org/sites/default/files/inline-files/OpenACC%20API%202.6%20Reference%20Guide.pdf
 
 Conclusion
 ----------
