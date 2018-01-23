@@ -168,7 +168,9 @@ routine.
 
 Add the necessary directives 
 to each routine one at a time in order
-of importance. After adding the directive, recompile the code, check that the
+of importance. After adding the directive, recompile the code but
+this time using compiler flags: -acc -ta=tesla:managed, which abilitate OpenACC
+directives and unified memory. Then, check that the
 answers have remained the same, and note the performance difference from your
 change.
 
@@ -201,9 +203,6 @@ routines, but this time you may add an extra parameter to also profile the gpu:
     nvprof --cpu-profiling on --cpu-profiling-mode top-down --print-gpu-summary ./cg
     
 
-**Hint** You may need to take a look at the OpenACC API if you use "parallel" directive: 
-https://www.openacc.org/sites/default/files/inline-files/OpenACC%20API%202.6%20Reference%20Guide.pdf
-
 Conclusion
 ----------
 After completing the above steps for each of the 3 important routines your
@@ -220,3 +219,6 @@ try again with the `parallel loop` directive. Remember, you will need to take
 responsibility of identifying any reductions in the code. If you used 
 `parallel loop`, try using `kernels` instead and observe the differences both in
 developer effort and performance.
+
+**Hint** You may need to take a look at the OpenACC API if you use "parallel" directive: 
+https://www.openacc.org/sites/default/files/inline-files/OpenACC%20API%202.6%20Reference%20Guide.pdf
