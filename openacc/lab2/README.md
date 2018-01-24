@@ -171,8 +171,7 @@ routine.
     }
 
 
-Add the necessary directives to each routine one at a time in order
-of importance. After adding each directive, recompile the code but this time
+After adding this directive, recompile the code but this time
 using compiler flags: -ta=tesla:managed -Minfo=accel, which abilitate OpenACC
 directives and unified memory, and print compiling information of the accelerator,
 respectively. Put special attetion to the compiler feedback output to ensure that the
@@ -270,7 +269,7 @@ Repeat step 2 and 3 for the other two most time-consuming routines (waxpby and d
 Conclusion
 ----------
 After completing the above steps for each of the 3 important routines your
-application should have a n execution time similar to the unaccelerated version.
+application should have an execution time similar to the unaccelerated version.
 You can verify this by removing the `-ta` flag from your compiler options. In the next
 lecture and lab we will replace CUDA Unified Memory with explicit memory
 management using OpenACC and then further optimize the loops using the OpenACC
