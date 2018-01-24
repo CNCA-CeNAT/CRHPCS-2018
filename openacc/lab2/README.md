@@ -28,7 +28,11 @@ Step 0 - Building the code
 --------------------------
 
 Makefiles have been provided for building both the C and Fortran versions of
-the code. Change directory to your language of choice and run the `make`
+the code. First load the PGI module to use the PGI compiler:
+
+    module load pgi
+
+Then, change directory to your language of choice and run the `make`
 command to build the code.
 
 ### C/C++
@@ -42,9 +46,10 @@ command to build the code.
     $ make
                 
 This will build an executable named `cg` that you can run with the `./cg`
-command. You may change the options passed to the compiler by modifying the
-`CFLAGS` variable in `c99/Makefile` or `FCFLAGS` in `f90/Makefile`. You should
-not need to modify anything in the Makefile except these compiler flags.
+command, but please **DO NOT** execute it yet (Remember you must not execute
+any programs in the login node). You may change the options passed to the compiler
+by modifying the `CFLAGS` variable in `c99/Makefile` or `FCFLAGS` in `f90/Makefile`.
+You should not need to modify anything in the Makefile except these compiler flags.
 
 The next steps of this tutorial should be executed in Kabré's GPU nodes to make
 use of the four Tesla k40c GPUs. To run code in the GPU nodes you have to create
@@ -57,9 +62,9 @@ the following header:
     #PBS -l RequestedTime
 
 Then replace NameOfTheJob with OPENACC_LAB2, NameOfTheQueue with k40,
-NumberOfNodesAndCores with nodes=1:ppn=1, and RequestedTime with walltime=00:13:00.
+NumberOfNodesAndCores with nodes=1:ppn=1, and RequestedTime with walltime=00:05:00.
 This means that a job named OPENACC_LAB2 is going to be send to the queue k40 and
-will execute using 1 node and 1 processor for a maximum of 13 minutes.
+will execute using 1 node and 1 processor for a maximum of 5 minutes.
 
 After the header you can put the script you want to execute. In this case, it is
 necessary to first go to the working directory and load the pgi and cuda modules:
@@ -166,13 +171,15 @@ routine.
     }
 
 
-Add the necessary directives 
-to each routine one at a time in order
-of importance. After adding the directive, recompile the code but
-this time using compiler flags: -acc -ta=tesla:managed, which abilitate OpenACC
-directives and unified memory. Then, check that the
-answers have remained the same, and note the performance difference from your
-change.
+Add the necessary directives to each routine one at a time in order
+of importance. After adding each directive, recompile the code but this time
+using compiler flags: -acc -ta=tesla:managed -Minfo=accel, which abilitate OpenACC
+directives, abilitate unified memory, and print compiling information of the accelerator,
+respectively. Put special attetion to the compiler feedback output to ensure that the
+code have been sucessfully parallelized. If it lists a "complex loop
+carried dependency", it may be necessary to declare
+some pointers as `restrict`  in order for the compiler to parallelize them.
+
 
     $ make
     pgc++ -fast -acc -ta=tesla:managed -Minfo=accel main.cpp -o cg
@@ -192,12 +199,11 @@ change.
                   16, #pragma acc loop gang, vector(128) /* blockIdx.x threadIdx.x */
               20, Loop is parallelizable
               
-The performance may slow down as you're working on this step. Be sure
+Now send a job to the queue only executing cg, check that the answers have remained the same,
+and note the performance difference from your change. The performance may slow down as you're
+working on this step. Be sure
 to read the compiler feedback to understand how the compiler parallelizes the
-code for you. If you are doing the C/C++ lab, it may be necessary to declare
-some pointers as `restrict` in order for the compiler to parallelize them. You
-will know if this is necessary if the compiler feedback lists a "complex loop
-carried dependency." Repeat step 1 and 2 for the other two most time-consuming
+code for you. Repeat step 1 and 2 for the other two most time-consuming
 routines, but this time you may add an extra parameter to also profile the gpu:
 
     nvprof --cpu-profiling on --cpu-profiling-mode top-down --print-gpu-summary ./cg
