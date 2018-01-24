@@ -29,11 +29,11 @@ $ make
 ```
     
 This will build an executable named `cg` that you can run with the `./cg`
-command. You may change the options passed to the compiler by modifying the
+command, but do not execute it in a login node. You may change the options passed to the compiler by modifying the
 `CFLAGS` variable in `c99/Makefile` or `FCFLAGS` in `f90/Makefile`. You should
 not need to modify anything in the Makefile except these compiler flags.
 
-Step 1 - Step 1 - Express Data Movement
+Step 1 - Express Data Movement
 ---------------------------------------
 
 In the previous lab we used CUDA Unified Memory, which we enabled with the
@@ -499,7 +499,7 @@ and on the Qwiklabs GPUs.
 
 | Step             | K40       | Qwiklab GPU | 
 | ---------------- | --------- | ----------- |
-| Unified Memory   | 8.458172  | 32.084347   |
-| Explicit Memory  | 8.459754  | 33.251878   | 
+| Unified Memory   | 16.458172  | 32.084347   |
+| Explicit Memory  | 16.459754  | 33.251878   | 
 | Vector Length 32 | 11.656281 | 23.83046    |
 | Final Code       | 4.802727  | 8.834735    | 
