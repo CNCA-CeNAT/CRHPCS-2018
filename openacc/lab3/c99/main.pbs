@@ -5,7 +5,7 @@
 
 cd $PBS_O_WORKDIR
 module load pgi
-module load cuda
+module load cuda/9.0.176
 
 ./cg
 
