@@ -28,7 +28,11 @@ Step 0 - Building the code
 --------------------------
 
 Makefiles have been provided for building both the C and Fortran versions of
-the code. Change directory to your language of choice and run the `make`
+the code. First load the PGI module to use the PGI compiler:
+
+    module load pgi
+
+Then, change directory to your language of choice and run the `make`
 command to build the code.
 
 ### C/C++
@@ -42,9 +46,10 @@ command to build the code.
     $ make
                 
 This will build an executable named `cg` that you can run with the `./cg`
-command. You may change the options passed to the compiler by modifying the
-`CFLAGS` variable in `c99/Makefile` or `FCFLAGS` in `f90/Makefile`. You should
-not need to modify anything in the Makefile except these compiler flags.
+command, but please **DO NOT** execute it yet (Remember you must not execute
+any programs in the login node). You may change the options passed to the compiler
+by modifying the `CFLAGS` variable in `c99/Makefile` or `FCFLAGS` in `f90/Makefile`.
+You should not need to modify anything in the Makefile except these compiler flags.
 
 The next steps of this tutorial should be executed in Kabré's GPU nodes to make
 use of the four Tesla k40c GPUs. To run code in the GPU nodes you have to create
@@ -57,9 +62,9 @@ the following header:
     #PBS -l RequestedTime
 
 Then replace NameOfTheJob with OPENACC_LAB2, NameOfTheQueue with k40,
-NumberOfNodesAndCores with nodes=1:ppn=1, and RequestedTime with walltime=00:13:00.
+NumberOfNodesAndCores with nodes=1:ppn=1, and RequestedTime with walltime=00:05:00.
 This means that a job named OPENACC_LAB2 is going to be send to the queue k40 and
-will execute using 1 node and 1 processor for a maximum of 13 minutes.
+will execute using 1 node and 1 processor for a maximum of 5 minutes.
 
 After the header you can put the script you want to execute. In this case, it is
 necessary to first go to the working directory and load the pgi and cuda modules:
@@ -76,7 +81,7 @@ command:
     
 To check the status of your job use:
 
-    qstat -a -u USERNAME
+    watch -n 5 qstat -a -u USERNAME
 
 When the job is finished you can check your results in file: 
     
@@ -166,16 +171,17 @@ routine.
     }
 
 
-Add the necessary directives 
-to each routine one at a time in order
-of importance. After adding the directive, recompile the code but
-this time using compiler flags: -acc -ta=tesla:managed, which abilitate OpenACC
-directives and unified memory. Then, check that the
-answers have remained the same, and note the performance difference from your
-change.
+After adding this directive, recompile the code but this time
+using compiler flags: -ta=tesla:managed -Minfo=accel, which abilitate OpenACC
+directives and unified memory, and print compiling information of the accelerator,
+respectively. Put special attetion to the compiler feedback output to ensure that the
+code have been sucessfully parallelized. If it lists a "complex loop
+carried dependency", it may be necessary to declare
+some pointers as `restrict`  in order for the compiler to parallelize them.
+
 
     $ make
-    pgc++ -fast -acc -ta=tesla:managed -Minfo=accel main.cpp -o cg
+    pgc++ -fast -ta=tesla:managed -Minfo=accel main.cpp -o cg
     "vector.h", line 16: warning: variable "vcoefs" was declared but never
               referenced
         double *vcoefs=v.coefs;
@@ -192,22 +198,79 @@ change.
                   16, #pragma acc loop gang, vector(128) /* blockIdx.x threadIdx.x */
               20, Loop is parallelizable
               
-The performance may slow down as you're working on this step. Be sure
+Now send a job to the queue only executing cg, check that the answers have remained the same,
+and note the performance difference from your change. The performance may slow down as you're
+working on this step. Be sure
 to read the compiler feedback to understand how the compiler parallelizes the
-code for you. If you are doing the C/C++ lab, it may be necessary to declare
-some pointers as `restrict` in order for the compiler to parallelize them. You
-will know if this is necessary if the compiler feedback lists a "complex loop
-carried dependency." Repeat step 1 and 2 for the other two most time-consuming
-routines, but this time you may add an extra parameter to also profile the gpu:
+code for you. 
+
+Step 3 - GPU Profiling
+-----------------------------
+Now gather a GPU and CPU profile of the program by adding an extra parameter to nvprof:
 
     nvprof --cpu-profiling on --cpu-profiling-mode top-down --print-gpu-summary ./cg
-    
+            
+    ==12591== NVPROF is profiling process 12591, command: ./cg
+    ==12591== Profiling application: ./cg
+    ==12591== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Nam                                                              e
+    GPU activities:  100.00%  19.8086s       101  196.12ms  193.31ms  198.91ms  mat                                                              vec(matrix const &, vector const &, vector const &)_14_gpu
+
+    ==12591== Unified Memory profiling result:
+    Device "Tesla K40c (0)"
+    Count  Avg Size  Min Size  Max Size  Total Size  Total Time  Name
+    10933  1.9430MB  44.000KB  2.0000MB  20.74506GB   3.616607s  Host To Device
+    169870  167.38KB  4.0000KB  0.9961MB  27.11530GB   4.716302s  Device To Host
+    Total CPU Page faults: 84935
+
+    ======== CPU profiling result (top down):
+    Time(%)      Time  Name
+     73.70%  101.403s  clone
+     73.70%  101.403s  | start_thread
+     73.70%  101.403s  |   ???
+     22.62%  31.1292s  main
+     15.82%  21.7643s  | matvec(matrix const &, vector const &, vector const &)
+     15.82%  21.7643s  | | __pgi_uacc_launch
+     15.82%  21.7643s  | |   __pgi_uacc_cuda_launch
+     15.05%  20.7074s  | |     cuStreamSynchronize
+      0.77%  1.05682s  | |     cuLaunchKernel
+      5.67%  7.80583s  | waxpby(double, vector const &, double, vector const &, vect                                                              or const &)
+      1.12%  1.53815s  | allocate_3d_poisson_matrix(matrix&, int)
+      0.14%  188.34ms  | | malloc_managed
+      0.11%  146.49ms  | |   __pgi_uacc_select_devid
+      0.11%  146.49ms  | |   | __pgi_uacc_cuda_select_valid
+      0.11%  146.49ms  | |   |   __pgi_uacc_cuda_init_device
+      0.11%  146.49ms  | |   |     cuDevicePrimaryCtxRetain
+      0.03%  41.854ms  | |   __pgi_uacc_cudaMemAllocManaged
+      0.03%  41.854ms  | |     cuMemAllocManaged
+      0.02%  20.927ms  | free_matrix(matrix&)
+      0.02%  20.927ms  |   free_managed
+      0.02%  20.927ms  |     cuMemFree_v2
+      3.53%   4.8551s  dot(vector const &, vector const &)
+      0.06%  83.709ms  ???
+      0.06%  83.709ms  | ???
+      0.06%  83.709ms  |   __run_exit_handlers
+      0.06%  83.709ms  |     __pgi_uacc_cuda_release_buffer
+      0.06%  83.709ms  |       cuDevicePrimaryCtxRelease
+      0.04%  52.318ms  __c_mset8
+      0.03%  41.854ms  allocate_vector(vector&, unsigned int)
+      0.03%  41.854ms  | malloc_managed
+      0.03%  41.854ms  |   __pgi_uacc_cudaMemAllocManaged
+      0.03%  41.854ms  |     cuMemAllocManaged
+      0.02%  31.391ms  free_vector(vector&)
+      0.02%  31.391ms    free_managed
+      0.02%  31.391ms      cuMemFree_v2
+
+      ======== Data collected at 100Hz frequency
+
+
+Repeat step 2 and 3 for the other two most time-consuming routines (waxpby and dot).
 
 Conclusion
 ----------
 After completing the above steps for each of the 3 important routines your
-application should show a speed-up over the unaccelerated version. You can
-verify this by removing the `-ta` flag from your compiler options. In the next
+application should have an execution time similar to the unaccelerated version.
+You can verify this by removing the `-ta` flag from your compiler options. In the next
 lecture and lab we will replace CUDA Unified Memory with explicit memory
 management using OpenACC and then further optimize the loops using the OpenACC
 loop directive.
@@ -216,9 +279,9 @@ Bonus
 -----
 1. If you used the `kernels` directive to express the parallelism in the code,
 try again with the `parallel loop` directive. Remember, you will need to take
-responsibility of identifying any reductions in the code. If you used 
+responsibility of identifying any **reductions** in the code. If you used 
 `parallel loop`, try using `kernels` instead and observe the differences both in
 developer effort and performance.
 
-**Hint** You may need to take a look at the OpenACC API if you use "parallel" directive: 
+**Hint** You may need to take a look at the OpenACC API if you need a reduction directive: 
 https://www.openacc.org/sites/default/files/inline-files/OpenACC%20API%202.6%20Reference%20Guide.pdf
