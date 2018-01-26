@@ -28,6 +28,7 @@
 void Usage(char* prog_name);
 double f(double x);    /* Function we're integrating */
 void Trap(double a, double b, int n, double* global_result_p);
+const double pi = 3.141592653589793238462643383079;
 
 int main(int argc, char* argv[]) {
    double  global_result = 0.0;  /* Store result in global_result */
@@ -47,6 +48,7 @@ int main(int argc, char* argv[]) {
    printf("With n = %d trapezoids, our estimate\n", n);
    printf("of the integral from %f to %f = %.14e\n",
       a, b, global_result);
+   printf("with an error of %f\n",global_result-pi);
    return 0;
 }  /* main */
 
