@@ -1,0 +1,8 @@
+#PBS -N trap
+#PBS -q phi-debug
+#PBS -l nodes=1
+#PBS -l walltime=00:15:00
+
+cd $PBS_O_WORKDIR
+
+./omp_trap1 64
