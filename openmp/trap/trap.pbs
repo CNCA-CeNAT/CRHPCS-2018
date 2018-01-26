@@ -5,4 +5,7 @@
 
 cd $PBS_O_WORKDIR
 
-./omp_trap1 64
+./omp_trap1 64 64
+./omp_trap1 64 256
+./omp_trap1 64 512
+./omp_trap1 64 1024

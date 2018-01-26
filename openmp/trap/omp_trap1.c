@@ -35,10 +35,11 @@ int main(int argc, char* argv[]) {
    int     n;                    /* Total number of trapezoids    */
    int     thread_count;
 
-   if (argc != 2) Usage(argv[0]);
+   if (argc != 3) Usage(argv[0]);
    thread_count = strtol(argv[1], NULL, 10);
-   printf("Enter a, b, and n\n");
-   scanf("%lf %lf %d", &a, &b, &n);
+   a = 0;
+   b = 1;
+   n = strtol(argv[2],NULL,10);
    if (n % thread_count != 0) Usage(argv[0]);
    #pragma omp parallel num_threads(thread_count) 
    Trap(a, b, n, &global_result);
@@ -56,7 +57,7 @@ int main(int argc, char* argv[]) {
  */
 void Usage(char* prog_name) {
 
-   fprintf(stderr, "usage: %s <number of threads>\n", prog_name);
+   fprintf(stderr, "usage: %s <number of threads> <number of trapezoids>\n", prog_name);
    fprintf(stderr, "   number of trapezoids must be evenly divisible by\n");
    fprintf(stderr, "   number of threads\n");
    exit(0);
@@ -71,7 +72,7 @@ void Usage(char* prog_name) {
 double f(double x) {
    double return_val;
 
-   return_val = x*x;
+   return_val = 4/(1+x*x);
    return return_val;
 }  /* f */
 
