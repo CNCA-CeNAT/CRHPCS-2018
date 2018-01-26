@@ -20,7 +20,7 @@ double f(double x);    /* Function we're integrating */
 double Trap(double a, double b, int n, double h);
 const double pi = 3.141592653589793238462643383079;
 
-int main(void) {
+int main(int argc, char* argv[]) {
    double  integral;   /* Store result in integral   */
    double  a, b;       /* Left and right endpoints   */
    int     n;          /* Number of trapezoids       */
