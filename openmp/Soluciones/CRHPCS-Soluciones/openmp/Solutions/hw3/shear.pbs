@@ -1,0 +1,8 @@
+#PBS -N shear
+#PBS -q phi-debug
+#PBS -l nodes=1
+#PBS -l walltime=0:30:00
+
+cd $PBS_O_WORKDIR
+
+OMP_NUM_THREADS=16 ./shear 100 test_shear_1.txt

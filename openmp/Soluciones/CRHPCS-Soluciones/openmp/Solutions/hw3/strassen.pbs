@@ -1,0 +1,9 @@
+#PBS -N strassen
+#PBS -q phi-debug
+#PBS -l nodes=1
+#PBS -l walltime=0:30:00
+
+cd $PBS_O_WORKDIR
+
+OMP_NUM_THREADS=16 ./strassen 10 test_strassen_A.txt test_strassen_A.txt > result.txt
+
