@@ -1,5 +1,5 @@
 CC=pgc++
-CFLAGS=-fast
+CFLAGS=-fast -Mnoautoinline
 
 all: 
 	${CC} ${CFLAGS} main.cpp -o cg
