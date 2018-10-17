@@ -30,7 +30,7 @@ Step 0 - Building the code
 Makefiles have been provided for building both the C and Fortran versions of
 the code. First load the PGI module to use the PGI compiler:
 
-    module load pgi
+    module load pgi/2018
 
 Then, change directory to your language of choice and run the `make`
 command to build the code.
@@ -70,7 +70,7 @@ After the header you can put the script you want to execute. In this case, it is
 necessary to first go to the working directory and load the pgi and cuda modules:
 
     cd $PBS_O_WORKDIR
-    module load pgi
+    module load pgi/2018
     module load cuda/9.0.176
 
 After this instructions you can place the commands you want to execute. Then
@@ -91,7 +91,7 @@ When the job is finished you can check your results in file:
 
     NameOfTheJob.eJobNumber
     
-which sometimes stores the profiler's output.
+which usually stores the profiler's output.
 
 **Hint** You should repeat steps 2 and 3 for each function identified in step 1
 in order of function importance. Gather a new GPU profile each time and observe
@@ -174,7 +174,7 @@ routine.
 After adding this directive, recompile the code but this time
 using compiler flags: -ta=tesla:managed -Minfo=accel, which abilitate OpenACC
 directives and unified memory, and print compiling information of the accelerator,
-respectively. Put special attetion to the compiler feedback output to ensure that the
+respectively. Also add compiler flag: -Mframe. Put special attetion to the compiler feedback output to ensure that the
 code have been sucessfully parallelized. If it lists a "complex loop
 carried dependency", it may be necessary to declare
 some pointers as `restrict`  in order for the compiler to parallelize them.
